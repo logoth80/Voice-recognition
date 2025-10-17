@@ -7,7 +7,7 @@ recognizer = speech_recognition.Recognizer()
 engine = pyttsx3.init()
 keyboard = Controller()
 
-known_words = {
+known_words_nomod = {
     "one": "q",
     "two": "w",
     "three": "e",
@@ -16,8 +16,11 @@ known_words = {
     "six": "6",
     "seven": "7",
     "eight": "8",
-    "nine": "9",
-    "house": "shift+d"
+    "nine": "9"
+}
+known_words_control={
+    "check": "d"
+
 }
 
 def press_keyboard(button, modifier=None, duration=0.1):
@@ -67,8 +70,8 @@ while True:
             # 2) Otherwise, check the last word
             else:
                 last_word = text.split()[-1]
-                if last_word in known_words:
-                    key = known_words[last_word]
+                if last_word in known_words_nomod:
+                    key = known_words_nomod[last_word]
                     press_keyboard(key)
                     print(f"Pressed key: {key}")
                     
