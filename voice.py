@@ -21,15 +21,25 @@ known_words_nomod = {
     "nine": "9"
 }
 known_words_control={
-    "check": "d"
+    "check": "d",
+    "price": "d",
+    "track": "d"
 }
 
-def press_keyboard(button, duration=0.1, contineous=False):        
+def press_keyboard(button, duration=0.1, contineous=False, mod=None):        
     if not contineous:
-        keyboard.press(button)
-        print(f"pressing {button}, for {duration} seconds") 
-        time.sleep(duration)
-        keyboard.release(button)
+        if mod == "control":
+            keyboard.press(Key.ctrl)
+            keyboard.press(button)
+            time.sleep(duration)
+            keyboard.release(button)
+            keyboard.release(Key.ctrl)
+            print(f"pressing {mod}+{button}, for {duration} seconds") 
+        else:            
+            keyboard.press(button)
+            print(f"pressing {button}, for {duration} seconds") 
+            time.sleep(duration)
+            keyboard.release(button)
     else:
         if kb.is_pressed(button):
             keyboard.release(button)
@@ -108,6 +118,11 @@ while True:
                     key = known_words_nomod[last_word]
                     press_keyboard(key)
                     print(f"Pressed key: {key}")
+                elif last_word in known_words_control:
+                    key = known_words_control[last_word]
+                    press_keyboard(key, mod="control")
+
+            # 3) If the last word requires a specific action
                 elif last_word in {"control", "central"}:
                     vc_control()
                 elif last_word=="enchanting":
