@@ -3,6 +3,7 @@ import speech_recognition
 import pyautogui
 from pynput.keyboard import Controller, Key
 import time
+import keyboard as kb
 
 recognizer = speech_recognition.Recognizer()
 # engine = pyttsx3.init()
@@ -23,11 +24,19 @@ known_words_control={
     "check": "d"
 }
 
-def press_keyboard(button, duration=0.1):        
-    keyboard.press(button)
-    print(f"pressing {button}, for {duration} seconds") 
-    time.sleep(duration)
-    keyboard.release(button)
+def press_keyboard(button, duration=0.1, contineous=False):        
+    if not contineous:
+        keyboard.press(button)
+        print(f"pressing {button}, for {duration} seconds") 
+        time.sleep(duration)
+        keyboard.release(button)
+    else:
+        if kb.is_pressed(button):
+            keyboard.release(button)
+            print(f"released {button}")
+        else:
+            keyboard.press(button)
+            print(f"pressed {button}")
 
 def press_mouse(b="left"):
     pyautogui.click(button=b)
@@ -55,7 +64,8 @@ while True:
         with speech_recognition.Microphone(device_index=2) as mic:
             print("listening...")
             audio=recognizer.listen(mic, phrase_time_limit=2)
-            text=recognizer.recognize_google(audio)
+            text=recognizer.recognize_google(audio).lower()
+
             print(text)
 
             if not text:
@@ -70,7 +80,7 @@ while True:
                     press_keyboard(press)
                 elif last_char=="2":
                     press="w"
-                    press_keyboard(press)
+                    press_keyboard(press, contineous=True)
                 elif last_char=="3":
                     press="e"
                     press_keyboard(press)
@@ -84,6 +94,8 @@ while True:
                     press_mouse("middle")
                 elif last_char=="7":
                     press_mouse("right")
+                elif last_char=="8":
+                    press_mouse("left")
                 else:
                     press=last_char
                     press_keyboard(press)
@@ -91,11 +103,12 @@ while True:
             # 2) Otherwise, check the last word
             else:
                 last_word = text.split()[-1]
+                last_word = last_word.lower()
                 if last_word in known_words_nomod:
                     key = known_words_nomod[last_word]
                     press_keyboard(key)
                     print(f"Pressed key: {key}")
-                elif last_word=="control":
+                elif last_word in {"control", "central"}:
                     vc_control()
                 elif last_word=="enchanting":
                     vc_shift()
