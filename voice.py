@@ -1,11 +1,18 @@
+#amatourish atempt to get VoiceAttack alternative for linux. Hardcoded functions and no GUI
+
 import speech_recognition
 import pyautogui
 from pynput.keyboard import Controller, Key
 import time
 import keyboard as kb
+import threading # 👈 **Import the threading module**
 
 recognizer = speech_recognition.Recognizer()
 keyboard = Controller()
+# 👇 **Global variable to control the clicking thread**
+clicking_thread_running = False 
+# 👇 **Global variable to store the clicking thread instance**
+clicking_thread = None
 
 known_words_nomod = {
     "one": "q",
@@ -28,7 +35,7 @@ known_words_control={
     "track": "d"
 }
 
-def press_keyboard(button, duration=0.1, contineous=False, mod=None):        
+def press_keyboard(button, duration=0.1, contineous=False, mod=None):
     if not contineous:
         if mod == "control":
             keyboard.press(Key.ctrl)
@@ -37,7 +44,7 @@ def press_keyboard(button, duration=0.1, contineous=False, mod=None):
             keyboard.release(button)
             keyboard.release(Key.ctrl)
             print(f"pressing {mod}+{button}, for {duration} seconds") 
-        else:            
+        else:
             keyboard.press(button)
             print(f"pressing {button}, for {duration} seconds") 
             time.sleep(duration)
@@ -54,6 +61,7 @@ def press_mouse(b="left"):
     pyautogui.click(button=b)
 
 def vc_cancel():
+    global clicking_thread_running, clicking_thread
     print("releasing alt+alt_gr+shift+ctrl+q+w")
     keyboard.release(Key.alt)
     keyboard.release(Key.alt_gr)
@@ -61,18 +69,49 @@ def vc_cancel():
     keyboard.release(Key.ctrl)
     keyboard.release("q")
     keyboard.release("w")
+    if clicking_thread_running:
+        # If running, stop it
+        clicking_thread_running = False
     #pyautogui.mouseUp(button="secondary")
 
-def vc_keepclicking():
-    print("keep clicking")
-    maxTime=10
+def clicking_task(): # 👈 **Renamed the loop function for clarity**
+    """The actual clicking loop function to be run in a thread."""
+    global clicking_thread_running
+    print("keep clicking: loop started")
+    maxTime=20
     startTime=time.time()
-    while not kb.is_pressed('space'):
+    # 👇 **Use the global flag to control the loop**
+    while clicking_thread_running and not kb.is_pressed('space'):
         pyautogui.click(button="left")
-        time.sleep(0.1)
+        time.sleep(0.05)
         if time.time()-startTime>maxTime:
             print('timed out')
-            return
+            break # Exit the loop if time limit reached
+    
+    # 👇 **Ensure the flag is set to False when the loop exits naturally**
+    clicking_thread_running = False 
+    print("keep clicking: loop stopped")
+
+
+def vc_keepclicking():
+    """Starts or stops the continuous clicking thread."""
+    global clicking_thread_running, clicking_thread
+
+    if clicking_thread_running:
+        # If running, stop it
+        clicking_thread_running = False
+        if clicking_thread and clicking_thread.is_alive():
+            clicking_thread.join(timeout=0.2) # Wait a bit for the thread to stop
+            print("Stopped continuous clicking.")
+    else:
+        # If not running, start it
+        clicking_thread_running = True
+        # 👇 **Create and start a new thread**
+        clicking_thread = threading.Thread(target=clicking_task) 
+        clicking_thread.daemon = True # Make it a daemon thread (optional, but good practice)
+        clicking_thread.start()
+        print("Started continuous clicking.")
+
 
 def vc_escape():
     vc_cancel()
@@ -114,6 +153,10 @@ while True:
     try:
         with speech_recognition.Microphone(device_index=2) as mic:
             print("listening...")
+            # 👇 **Check if a clicking thread is running and print its status**
+            if clicking_thread_running:
+                print("Continuous clicking is active. Press SPACE or say 'cancel' to stop.")
+            
             audio=recognizer.listen(mic, phrase_time_limit=2)
             text=recognizer.recognize_google(audio).lower()
 
@@ -171,7 +214,7 @@ while True:
                 elif last_word=="cancel":
                     vc_cancel()
                 elif last_word=="house":
-                    vc_keepclicking()
+                    vc_keepclicking() # **This now manages the thread**
                 elif last_word=="check":
                     vc_priceCheck()
                 elif last_word=="map":
@@ -182,3 +225,10 @@ while True:
                     
     except speech_recognition.UnknownValueError:
         recognizer=speech_recognition.Recognizer()
+    # 👇 **Handle the program termination gracefully**
+    except KeyboardInterrupt:
+        print("\nExiting program...")
+        clicking_thread_running = False # Stop the clicking loop
+        if clicking_thread and clicking_thread.is_alive():
+            clicking_thread.join(timeout=0.2)
+        break
