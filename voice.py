@@ -1,12 +1,10 @@
 import speech_recognition
-#import pyttsx3
 import pyautogui
 from pynput.keyboard import Controller, Key
 import time
 import keyboard as kb
 
 recognizer = speech_recognition.Recognizer()
-# engine = pyttsx3.init()
 keyboard = Controller()
 
 known_words_nomod = {
@@ -18,8 +16,13 @@ known_words_nomod = {
     "six": "6",
     "seven": "7",
     "eight": "8",
-    "nine": "9"
+    "nine": "9",
+    "inventory": "i",
+    "options": "o",
+    "character": "c",
+    "stats": "c"
 }
+
 known_words_control={
     "price": "d",
     "track": "d"
@@ -51,7 +54,7 @@ def press_mouse(b="left"):
     pyautogui.click(button=b)
 
 def vc_cancel():
-    print("cancel")
+    print("releasing alt+alt_gr+shift+ctrl+q+w")
     keyboard.release(Key.alt)
     keyboard.release(Key.alt_gr)
     keyboard.release(Key.shift)
@@ -62,10 +65,32 @@ def vc_cancel():
 
 def vc_keepclicking():
     print("keep clicking")
+    maxTime=10
+    startTime=time.time()
     while not kb.is_pressed('space'):
         pyautogui.click(button="left")
         time.sleep(0.1)
+        if time.time()-startTime>maxTime:
+            print('timed out')
+            return
 
+def vc_escape():
+    vc_cancel()
+    keyboard.press(Key.esc)
+    keyboard.release(Key.esc)
+
+def vc_priceCheck():
+    print("check price")
+    keyboard.press(Key.ctrl)
+    keyboard.press(Key.alt_gr)
+    keyboard.press('d')
+    keyboard.release('d')
+    keyboard.release(Key.alt_gr)
+    keyboard.release(Key.ctrl)
+
+def vc_map():
+    keyboard.press(Key.tab)
+    keyboard.release(Key.tab)
 
 def vc_control():
     print("ctrl")
@@ -147,6 +172,11 @@ while True:
                     vc_cancel()
                 elif last_word=="house":
                     vc_keepclicking()
+                elif last_word=="check":
+                    vc_priceCheck()
+                elif last_word=="map":
+                    vc_map()
+
 
                     
                     
