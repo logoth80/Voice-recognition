@@ -21,7 +21,6 @@ known_words_nomod = {
     "nine": "9"
 }
 known_words_control={
-    "check": "d",
     "price": "d",
     "track": "d"
 }
@@ -50,6 +49,23 @@ def press_keyboard(button, duration=0.1, contineous=False, mod=None):
 
 def press_mouse(b="left"):
     pyautogui.click(button=b)
+
+def vc_cancel():
+    print("cancel")
+    keyboard.release(Key.alt)
+    keyboard.release(Key.alt_gr)
+    keyboard.release(Key.shift)
+    keyboard.release(Key.ctrl)
+    keyboard.release("q")
+    keyboard.release("w")
+    #pyautogui.mouseUp(button="secondary")
+
+def vc_keepclicking():
+    print("keep clicking")
+    while not kb.is_pressed('space'):
+        pyautogui.click(button="left")
+        time.sleep(0.1)
+
 
 def vc_control():
     print("ctrl")
@@ -127,6 +143,11 @@ while True:
                     vc_control()
                 elif last_word=="enchanting":
                     vc_shift()
+                elif last_word=="cancel":
+                    vc_cancel()
+                elif last_word=="house":
+                    vc_keepclicking()
+
                     
                     
     except speech_recognition.UnknownValueError:
