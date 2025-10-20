@@ -6,6 +6,7 @@ from pynput.keyboard import Controller, Key
 import time
 import keyboard as kb
 import threading # 👈 **Import the threading module**
+import pygame
 
 recognizer = speech_recognition.Recognizer()
 keyboard = Controller()
@@ -14,9 +15,11 @@ clicking_thread_running = False
 # 👇 **Global variable to store the clicking thread instance**
 clicking_thread = None
 
+pygame.init() #for sounds
+
 known_words_nomod = {
     "one": "q",
-    "two": "w",
+#    "two": "w",
     "three": "e",
     "four": "r",
     "five": "t",
@@ -27,13 +30,20 @@ known_words_nomod = {
     "inventory": "i",
     "options": "o",
     "character": "c",
-    "stats": "c"
+    "stats": "c",
+    "potion": "1",
+    "mana": "5",
+    "speed": "4"
 }
 
 known_words_control={
     "price": "d",
     "track": "d"
 }
+
+def play_sound(what_sound):
+    sound = pygame.mixer.Sound(what_sound)
+    sound.play()
 
 def press_keyboard(button, duration=0.1, contineous=False, mod=None):
     if not contineous:
@@ -53,9 +63,12 @@ def press_keyboard(button, duration=0.1, contineous=False, mod=None):
         if kb.is_pressed(button):
             keyboard.release(button)
             print(f"released {button}")
+            play_sound("released w.wav")
         else:
             keyboard.press(button)
             print(f"pressed {button}")
+            play_sound("pressed w.wav")
+
 
 def press_mouse(b="left"):
     pyautogui.click(button=b)
@@ -73,6 +86,7 @@ def vc_cancel():
         # If running, stop it
         clicking_thread_running = False
     #pyautogui.mouseUp(button="secondary")
+    play_sound("released w.wav")
 
 def clicking_task(): # 👈 **Renamed the loop function for clarity**
     """The actual clicking loop function to be run in a thread."""
@@ -136,18 +150,24 @@ def vc_control():
     if keyboard.ctrl_pressed:
         print("released ctrl")
         keyboard.release(Key.ctrl)
+        play_sound("released control.wav")
     else:
         print("pressed ctrl")
         keyboard.press(Key.ctrl)
+        play_sound("pressed control.wav")
+
 
 def vc_shift():
     print("shift")
     if keyboard.shift_pressed:
         print("released shift")
         keyboard.release(Key.shift)
+        play_sound("released shift.wav")
     else:
         print("pressed shift")
         keyboard.press(Key.shift)
+        play_sound("pressed shift.wav")
+
 
 while True:
     try:
@@ -211,6 +231,8 @@ while True:
                     vc_control()
                 elif last_word=="enchanting":
                     vc_shift()
+                elif last_word=="two":
+                    press_keyboard("w", contineous=True)
                 elif last_word=="cancel":
                     vc_cancel()
                 elif last_word=="house":
