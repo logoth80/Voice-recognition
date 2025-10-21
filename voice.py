@@ -22,10 +22,12 @@ known_words_nomod = {
 #    "two": "w",
     "three": "e",
     "four": "r",
+    "for": "r",
     "five": "t",
     "six": "6",
     "seven": "7",
     "eight": "8",
+    "portal":"8",
     "nine": "9",
     "inventory": "i",
     "options": "o",
@@ -168,7 +170,6 @@ def vc_shift():
         keyboard.press(Key.shift)
         play_sound("pressed shift.wav")
 
-
 while True:
     try:
         with speech_recognition.Microphone(device_index=2) as mic:
@@ -177,7 +178,7 @@ while True:
             if clicking_thread_running:
                 print("Continuous clicking is active. Press SPACE or say 'cancel' to stop.")
             
-            audio=recognizer.listen(mic, phrase_time_limit=2)
+            audio=recognizer.listen(mic, phrase_time_limit=1.8)
             text=recognizer.recognize_google(audio).lower()
 
             print(text)
@@ -208,8 +209,7 @@ while True:
                     press_mouse("middle")
                 elif last_char=="7":
                     press_mouse("right")
-                elif last_char=="8":
-                    press_mouse("left")
+
                 else:
                     press=last_char
                     press_keyboard(press)
@@ -241,6 +241,9 @@ while True:
                     vc_priceCheck()
                 elif last_word=="map":
                     vc_map()
+                elif last_word=="escape":
+                    vc_escape()
+
 
 
                     
